@@ -1,0 +1,42 @@
+name: Cross platform distribution build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  package:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up PHP and Composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: zip
+          tools: composer:v2
+          coverage: none
+
+      - name: Check PHP ZIP extension
+        run: php -r "if (!class_exists('ZipArchive')) { exit(1); }"
+
+      - name: Build distribution ZIP
+        run: php scripts/build-zip.php
+
+      - name: Verify package contents
+        run: php scripts/verify-zip.php
+
+      - name: Upload installable package
+        uses: actions/upload-artifact@v4
+        with:
+          name: wp-reliable-document-queue-${{ matrix.os }}
+          path: dist/*.zip
+          if-no-files-found: error

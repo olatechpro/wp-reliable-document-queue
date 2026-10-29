@@ -1,0 +1,31 @@
+name: PHP tests
+on:
+  push:
+  pull_request:
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.1', '8.3']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+      - name: Lint
+        run: find . -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Run behavioral tests
+        run: php tests/run.php
+  coding-standards:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+      - name: Install coding standards
+        run: composer install --no-interaction --prefer-dist
+      - name: Check WordPress coding standards
+        run: vendor/bin/phpcs --standard=phpcs.xml.dist
