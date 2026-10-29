@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<ruleset name="WP Reliable Document Queue">
+	<description>WordPress coding standards for the demonstration plugin, with PSR-4 class filenames.</description>
+	<file>document-queue-demo.php</file>
+	<file>src</file>
+	<exclude-pattern>vendor/*</exclude-pattern>
+	<arg name="extensions" value="php"/>
+	<arg value="ps"/>
+	<rule ref="WordPress">
+		<!-- PSR-4 filenames are intentional for the namespaced service classes. -->
+		<exclude name="WordPress.Files.FileName"/>
+		<!-- Database reads are deliberately uncached to preserve queue claim correctness. -->
+		<exclude name="WordPress.DB.DirectDatabaseQuery"/>
+	</rule>
+	<rule ref="PHPCompatibilityWP"/>
+	<config name="testVersion" value="8.1-"/>
+</ruleset>
