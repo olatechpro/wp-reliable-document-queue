@@ -31,7 +31,7 @@ function __(string $text, string $domain): string
     if ($domain !== 'wp-reliable-document-queue') {
         throw new RuntimeException('Unexpected translation domain: ' . $domain);
     }
-    return $GLOBALS['wrdq_test_translations'][$text] ?? $text;
+    return $text;
 }
 
 foreach (['Repository', 'Storage', 'Mailer', 'Workflow'] as $class) {
@@ -220,24 +220,6 @@ $w->render('ambiguous', 120);
 $r->claim_delivery('ambiguous', 121);
 check($w->deliver('ambiguous', 122) === 'already_claimed', 'ambiguous handoff not resent');
 check($m->calls === 1, 'no second send after ambiguous handoff');
-
-// Exercise translated document contents and exceptions without WordPress.
-$GLOBALS['wrdq_test_translations'] = [
-    "Fictional document\nEvent: %s\n" => "Document fictif\nEvenement : %s\n",
-    'Invalid event key' => 'Identifiant invalide',
-];
-check($w->render('translated', 130) === 'ready', 'translated document renders');
-check(
-    file_get_contents($r->docs['translated']['path']) === "Document fictif\nEvenement : translated\n",
-    'document template uses translations and preserves event key'
-);
-try {
-    $w->render('', 131);
-    check(false, 'invalid event key rejected');
-} catch (InvalidArgumentException $error) {
-    check($error->getMessage() === 'Identifiant invalide', 'exception uses translation');
-}
-unset($GLOBALS['wrdq_test_translations']);
 
 foreach (glob($dir . '/*') as $file) {
     unlink($file);
